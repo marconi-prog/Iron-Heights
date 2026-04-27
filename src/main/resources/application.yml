@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: prison-management
+
+  datasource:
+    url: jdbc:oracle:thin:@${DB_HOST}:${DB_PORT}/${DB_SERVICE}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      pool-name: PrisonHikariPool
+
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: PRISON_USER
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000 # 24 horas em ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.prison: INFO
+    org.hibernate.SQL: DEBUG

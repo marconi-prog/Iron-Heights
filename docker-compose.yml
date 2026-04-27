@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    container_name: prison-oracle
+    environment:
+      ORACLE_PASSWORD: OracleRoot123
+      APP_USER: PRISON_USER
+      APP_USER_PASSWORD: PrisonPass123
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./init-db:/container-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - prison-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prison-app
+    environment:
+      DB_HOST: oracle
+      DB_PORT: 1521
+      DB_SERVICE: FREEPDB1
+      DB_USER: PRISON_USER
+      DB_PASSWORD: PrisonPass123
+      JWT_SECRET: minha-chave-super-secreta-para-prisao-123456789-abcdef
+    ports:
+      - "8080:8080"
+    depends_on:
+      oracle:
+        condition: service_healthy
+    networks:
+      - prison-net
+    restart: unless-stopped
+
+volumes:
+  oracle_data:
+
+networks:
+  prison-net:
+    driver: bridge
